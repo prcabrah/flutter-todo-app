@@ -7,13 +7,36 @@ class Controller extends GetxController {
   final TextEditingController titleController = TextEditingController();
   final RxList<Todo> todos = <Todo>[].obs;
 
-  final RxBool isLoading = false.obs;
+  // Set isLoading to true initially because we will be fetching data.
+  final RxBool isLoading = true.obs;
   final RxBool isSaving = false.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // THIS IS THE CHANGE: We call fetchTodos() when the app starts.
+    fetchTodos();
+  }
 
   @override
   void onClose() {
     titleController.dispose();
     super.onClose();
+  }
+
+  Future<void> fetchTodos() async {
+    try {
+      // Ensure isLoading is true at the start.
+      isLoading.value = true;
+      var fetchedTodos = await TodoService.fetchTodos();
+      todos.assignAll(fetchedTodos);
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to fetch todos: ${e.toString()}',
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      // Set isLoading to false after fetching is complete (or fails).
+      isLoading.value = false;
+    }
   }
 
   Future<void> createTodo() async {
@@ -24,14 +47,12 @@ class Controller extends GetxController {
     isSaving.value = true;
     try {
       await TodoService.createTodo(titleController.text);
-
       final newTodo = Todo(
         id: DateTime.now().millisecondsSinceEpoch,
         userId: 1,
         title: titleController.text,
         completed: false,
       );
-
       todos.insert(0, newTodo);
       titleController.clear();
       Get.back();
@@ -42,7 +63,7 @@ class Controller extends GetxController {
     }
   }
 
-   Future<void> updateTodoStatus(Todo todo) async {
+  Future<void> updateTodoStatus(Todo todo) async {
     isSaving.value = true;
     try {
       final index = todos.indexWhere((item) => item.id == todo.id);
@@ -54,10 +75,12 @@ class Controller extends GetxController {
           completed: !todo.completed,
         );
         todos[index] = updatedTodo;
-        await TodoService.updateTodoStatus(updatedTodo);
+        if (updatedTodo.id is int) {
+          await TodoService.updateTodoStatus(updatedTodo);
+        }
       }
     } catch (e) {
-      // it should catch no error
+      // Get.snackbar('Error', 'An unexpected error occurred during update');
     } finally {
       isSaving.value = false;
     }
