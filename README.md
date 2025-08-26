@@ -9,6 +9,9 @@ This project is a starting point for a Flutter application.
 This is the update appetize link 
 https://appetize.io/app/b_tijzhwq6afiegn5hxvlxozc56u
 
+This is a link to google drive containing the apk file 
+https://drive.google.com/file/d/1e_XnHZuZFvsrvp7ZGXKVQpN2eNYK1fkz/view?usp=sharing
+
 A few resources to get you started if this is your first Flutter project:
 
 - [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
